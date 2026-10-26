@@ -74,16 +74,17 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
 .sk{height:70px;border-radius:16px;margin:8px 0;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.14),rgba(255,255,255,.05));background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
 .mut{color:var(--mut)}
+.prem{border-color:gold;box-shadow:0 0 22px rgba(255,215,0,.28);background:linear-gradient(135deg,rgba(255,200,60,.14),rgba(255,122,24,.08))}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div id="fx"><div class="moon"></div></div>
 <header><div class="pump">🎃</div><div><h1>DotaList</h1><small id="days"></small></div></header>
-<nav><i id="pill"></i><button class="on">🔥 Мета</button><button>🦸 Герой</button><button>📊 Матч</button><button>⚔️ Дуэли</button><button>💼 Заказ</button></nav>
+<nav><i id="pill"></i><button class="on">🔥 Мета</button><button>🦸 Герой</button><button>📊 Матч</button><button>💎 Бот</button><button>💼 Заказ</button></nav>
 <main>
 <section id="meta" class="on">
-  <div class="seg" id="seg"><button class="on" data-k="pub">📈 Паблики</button><button data-k="pro">🏆 Про</button><button data-k="bad">💀 Слабые</button></div>
+  <div class="seg" id="seg"><button class="on" data-k="pub">📈 Паблики</button><button data-k="pro">🏆 Про</button><button data-k="bad">💀 Слабые</button><button data-k="live">🏟 Матчи</button></div>
   <div id="metaList"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
 </section>
 <section id="hero">
@@ -100,6 +101,9 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
   <div id="matchOut" class="mut">Нужен недавний публичный матч.</div>
 </section>
 <section id="play">
+  <div class="card prem"><b>💎 Premium</b><br><span class="mut">Безлимитные советы тренера и контрпики, авто-уведомления о каждом матче и Tilt Guard.</span>
+    <button class="btn" data-go="prem">Открыть Premium в боте</button></div>
+  <div id="chBox"></div>
   <div class="card"><b>📝 Регистрация</b><br><span class="mut">Введи свой Steam ID (число) или ссылку вида /profiles/…</span>
     <input id="regIn" inputmode="numeric" placeholder="Steam ID">
     <button class="btn" id="regBtn">Проверить профиль</button><div id="regOut"></div></div>
@@ -113,8 +117,8 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
   <div class="card"><b>🦇 Хочешь такого бота или приложение?</b><br><span class="mut">Для твоего канала, стрима или клуба.</span></div>
   <div class="card" style="--i:1">🤖 Telegram-бот: разборы матчей, контрпики, Premium за Stars</div>
   <div class="card" style="--i:2">📱 Мини-приложение: красивый интерфейс прямо в Telegram</div>
-  <div class="card" style="--i:3">🎮 Конкурсы, викторины и рейтинги для сообщества</div>
-  <a class="btn" id="contactBtn" style="display:none">✉️ Написать админу</a>
+  <div class="card" style="--i:3">💎 Подписки и оплата: Telegram Stars и СБП</div>
+  <a class="btn" id="contactBtn" style="display:none">📝 Оставить заявку</a>
   <a class="btn alt" id="donateBtn" style="display:none">🍬 Поддержать проект</a>
 </section>
 </main>
@@ -123,6 +127,8 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
 const ADMIN_ID = "6566241543";   // Telegram ID админа
 const ADMIN_USER = "";           // твой @ник без @ (так чат открывается надёжнее)
 const DONATE = "";    // ссылка на донат (оформляется через родителей)
+const CHANNEL = "";   // твой канал без @
+const CHANNEL2 = "";  // канал брата без @
 const BOT = "";       // имя бота без @, например "DotaList_bot"
 // ========================================
 const API="https://api.opendota.com/api", CDN="https://cdn.cloudflare.steamstatic.com";
@@ -149,9 +155,12 @@ $("days").textContent=dd===0?"🎃 С Хэллоуином!":dd<0?"🕸 Хэлл
 const cLink=ADMIN_USER?"https://t.me/"+ADMIN_USER:"tg://user?id="+ADMIN_ID;
 $("contactBtn").href=cLink;$("contactBtn").style.display="block";
 $("contactBtn").onclick=e=>{e.preventDefault();hap();
+  if(BOT){toBot("order");return}
   try{if(ADMIN_USER&&tg&&tg.openTelegramLink)tg.openTelegramLink(cLink);else window.location.href=cLink}catch(x){window.location.href=cLink}};
 if(DONATE){$("donateBtn").href=DONATE;$("donateBtn").style.display="block"}
 
+[CHANNEL,CHANNEL2].filter(Boolean).forEach(c=>{const a=document.createElement("a");a.className="btn alt";a.textContent="📢 Подписаться: @"+c;a.href="https://t.me/"+c;
+  a.onclick=e=>{e.preventDefault();hap();try{tg.openTelegramLink(a.href)}catch(x){window.open(a.href,"_blank")}};$("chBox").appendChild(a)});
 // --- вкладки с анимацией
 const tabs=["meta","hero","match","play","order"],btns=document.querySelectorAll("nav button");let cur=0;
 function go(i){
@@ -182,7 +191,15 @@ async function init(){
 const ready=init();
 
 // --- мета
+async function renderPro(){
+  $("metaList").innerHTML=sk;
+  try{const d=await get("/proMatches");
+    $("metaList").innerHTML=d.slice(0,12).map((m,i)=>{const a=m.radiant_name||"Radiant",b=m.dire_name||"Dire";
+      return`<div class="card" style="--i:${i}"><b>${esc(a)} vs ${esc(b)}</b><br><span class="val">🏆 ${esc(m.radiant_win?a:b)}</span> <span class="mut">· ${esc(m.league_name||"")}</span></div>`}).join("")}
+  catch(e){$("metaList").innerHTML='<div class="card">Не удалось загрузить матчи 👻</div>'}
+}
 function renderMeta(kind){
+  if(kind==="live")return renderPro();
   const rows=HEROES.map(h=>{const[p,w]=tot(h);return{h,p,w,wr:p?w/p*100:0}});
   const mx=Math.max(...rows.map(r=>r.p))||1,pop=rows.filter(r=>r.p>=mx*.2);
   let list;
@@ -216,7 +233,7 @@ async function openHero(id){
   const o=$("heroOut");$("heroList").style.display="none";o.style.display="block";o.innerHTML=sk;
   try{tg.BackButton.show()}catch(e){}
   try{
-    const[pop,lanes]=await Promise.all([get(`/heroes/${id}/itemPopularity`),get(`/scenarios/laneRoles?hero_id=${id}`)]);
+    const[pop,lanes,mu]=await Promise.all([get(`/heroes/${id}/itemPopularity`),get(`/scenarios/laneRoles?hero_id=${id}`),get(`/heroes/${id}/matchups`).catch(()=>[])]);
     const L={1:"Лёгкая линия",2:"Мид",3:"Сложная линия",4:"Лес"},agg={};
     lanes.forEach(r=>agg[r.lane_role]=(agg[r.lane_role]||0)+ +r.games);
     const sum=Object.values(agg).reduce((a,b)=>a+b,0)||1;
@@ -225,11 +242,13 @@ async function openHero(id){
     const ph=[["start_game_items","🎒 Стартовые предметы"],["early_game_items","⚔️ Лейнинг"],["mid_game_items","🛡 Мид-гейм"],["late_game_items","👑 Лейт"]];
     const ih=ph.map(([k,t],n)=>{const ids=Object.entries(pop[k]||{}).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
       return ids.length?`<div class="card" style="--i:${n+2}"><div class="ph">${t}</div><div class="its">${ids.map(itemBig).join("")}</div></div>`:""}).join("");
+    const cs=(mu||[]).filter(x=>x.games_played>=100).map(x=>({h:HEROES.find(z=>z.id===x.hero_id),wr:100-x.wins/x.games_played*100})).filter(x=>x.h).sort((a,b)=>b.wr-a.wr).slice(0,6);
+    const ch=cs.length?`<div class="card" style="--i:7"><div class="ph">🛡 Контрпики</div><div class="its">${cs.map(x=>`<div class="it"><img loading="lazy" src="${himg(x.h)}" alt=""><span>${esc(x.h.localized_name)}<br>${x.wr.toFixed(0)}%</span></div>`).join("")}</div></div>`:"";
     const[p,w]=tot(h),yt="https://www.youtube.com/results?search_query=",A={str:"💪 Сила",agi:"🏹 Ловкость",int:"🧠 Интеллект",all:"🌀 Универсал"};
     o.innerHTML=`<button class="back" id="bk">← Все герои</button>
       <div class="banner"><img src="${himg(h)}" alt=""><div><h2>${esc(h.localized_name)}</h2>
       <span class="tag">${A[h.primary_attr]||""}</span><span class="tag">🏆 ${p?(w/p*100).toFixed(1):"-"}%</span>${(h.roles||[]).map(r=>`<span class="tag">${esc(r)}</span>`).join("")}</div></div>
-      <div class="card" style="--i:1"><div class="ph">📍 Где играют</div>${lh||'<span class="mut">Нет данных</span>'}</div>${ih}
+      <div class="card" style="--i:1"><div class="ph">📍 Где играют</div>${lh||'<span class="mut">Нет данных</span>'}</div>${ih}${ch}
       <a class="btn" target="_blank" href="${yt+encodeURIComponent(h.localized_name+" дота 2 гайд")}">🎬 Гайд на русском</a>
       <a class="btn alt" target="_blank" href="${yt+encodeURIComponent(h.localized_name+" dota 2 guide")}">🎬 Guide (English)</a>`;
     $("bk").onclick=closeHero;
