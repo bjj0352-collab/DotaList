@@ -3,132 +3,279 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dota Помощник</title>
+<meta name="theme-color" content="#0d0716">
+<title>DotaList</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#fff;--tx:#111;--card:#f1f2f5;--ac:#2a7de1;--mut:#777}
-@media (prefers-color-scheme:dark){:root{--bg:#17181c;--tx:#eee;--card:#25262c;--mut:#999}}
-:root{--bg:var(--tg-theme-bg-color,var(--bg));--tx:var(--tg-theme-text-color,var(--tx));--card:var(--tg-theme-secondary-bg-color,var(--card));--ac:var(--tg-theme-button-color,var(--ac))}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px system-ui,sans-serif;padding:0 12px 80px;padding-top:env(safe-area-inset-top,0)}
-nav{display:flex;gap:6px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:2}
-nav button{flex:1;padding:9px 4px;border:0;border-radius:10px;background:var(--card);color:var(--tx);font-size:13px}
-nav button.on{background:var(--ac);color:#fff}
-.card{background:var(--card);border-radius:12px;padding:10px;margin:8px 0}
-.row{display:flex;align-items:center;gap:10px}
-.row img{width:56px;height:32px;border-radius:6px;object-fit:cover}
-.row b{flex:1}.mut{color:var(--mut);font-size:13px}
-input{width:100%;padding:11px;border-radius:10px;border:1px solid var(--mut);background:var(--bg);color:var(--tx);font-size:15px;margin:6px 0}
-.btn{display:block;text-align:center;padding:11px;border-radius:10px;background:var(--ac);color:#fff;text-decoration:none;border:0;width:100%;font-size:15px;margin:6px 0}
-.mvp{border:2px solid gold}
-.tbl{overflow-x:auto}
+:root{--bg1:#0d0716;--bg2:#2b0f3d;--card:rgba(255,255,255,.07);--line:rgba(255,150,50,.28);--or:#ff7a18;--or2:#ffb347;--gr:#9dff4f;--tx:#f5ecff;--mut:#b9a6d6;--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg1);color-scheme:dark}
+body{margin:0;color:var(--tx);font:600 15px Nunito,system-ui,sans-serif;min-height:100vh;
+background:radial-gradient(120% 70% at 85% 0%,#5a1f6e 0%,transparent 55%),radial-gradient(90% 60% at 0% 100%,#3b1205 0%,transparent 60%),linear-gradient(180deg,var(--bg2),var(--bg1) 70%);
+background-attachment:fixed;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px calc(env(safe-area-inset-bottom,0px) + 40px);overflow-x:hidden}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+#fx .moon{position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff7d6,#ffd36b 60%,#c98a1c);box-shadow:0 0 80px 30px rgba(255,190,80,.35);opacity:.85;animation:glow 5s ease-in-out infinite}
+#fx span{position:absolute;bottom:-60px;opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:.55}50%{transform:translate(30px,-55vh) rotate(12deg)}90%{opacity:.4}100%{transform:translate(-20px,-115vh) rotate(-10deg);opacity:0}}
+@keyframes glow{50%{box-shadow:0 0 110px 45px rgba(255,190,80,.5)}}
+header,nav,main{position:relative;z-index:1}
+header{display:flex;align-items:center;gap:10px;padding:6px 2px 2px}
+.pump{font-size:38px;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(255,122,24,.8))}
+@keyframes bob{50%{transform:translateY(-4px) rotate(6deg) scale(1.06)}}
+h1{margin:0;font:400 30px Creepster,Nunito,cursive;letter-spacing:1px;color:var(--or);text-shadow:0 0 14px rgba(255,122,24,.7);animation:flick 4s infinite}
+@keyframes flick{0%,92%,100%{opacity:1}94%{opacity:.6}96%{opacity:1}98%{opacity:.7}}
+small{color:var(--mut);font-weight:600}
+nav{position:sticky;top:env(safe-area-inset-top,0px);display:flex;margin:10px 0;padding:4px;border-radius:16px;background:rgba(20,8,32,.75);backdrop-filter:blur(12px);border:1px solid var(--line);z-index:5}
+nav i{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/5);border-radius:12px;background:linear-gradient(135deg,var(--or),#d83a00);box-shadow:0 0 18px rgba(255,122,24,.6);transition:transform .4s var(--ease)}
+nav button{position:relative;flex:1;border:0;background:none;color:var(--mut);padding:10px 1px;font:800 12px Nunito,sans-serif;transition:color .3s}
+nav button.on{color:#fff}
 section{display:none}section.on{display:block}
+section.r{animation:inR .4s var(--ease)}section.l{animation:inL .4s var(--ease)}
+@keyframes inR{from{opacity:0;transform:translateX(40px)}}@keyframes inL{from{opacity:0;transform:translateX(-40px)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0;backdrop-filter:blur(6px);animation:up .5s var(--ease) both;animation-delay:calc(var(--i,0)*45ms)}
+@keyframes up{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.row{display:flex;align-items:center;gap:10px;transition:transform .2s,box-shadow .2s}
+.row:active{transform:scale(.97)}
+.row img.hp{width:64px;height:36px;border-radius:8px;object-fit:cover;box-shadow:0 0 10px rgba(0,0,0,.5)}
+.gr{flex:1;min-width:0}.gr b{display:block;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.val{font-weight:800;color:var(--gr);text-shadow:0 0 8px rgba(157,255,79,.5);white-space:nowrap}
+.rk{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:13px}
+.r1{background:linear-gradient(135deg,#ffd75e,#e09a00);color:#2b1700}.r2{background:linear-gradient(135deg,#e6e6ee,#9a9aa8);color:#222}.r3{background:linear-gradient(135deg,#e8a06a,#a8531a);color:#2b1000}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--or),var(--gr));animation:grow 1s .25s var(--ease) forwards}
+@keyframes grow{to{width:var(--w)}}
+.seg,.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.seg button,.chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--tx);padding:8px 13px;border-radius:20px;font:800 13px Nunito,sans-serif;transition:.25s}
+.seg button.on,.chips button.on{background:var(--or);border-color:var(--or);box-shadow:0 0 14px rgba(255,122,24,.6)}
+input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--tx);font:700 15px Nunito,sans-serif;margin:4px 0 8px;outline:0;transition:.25s}
+input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hc{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);animation:up .4s var(--ease) both;animation-delay:calc(var(--i,0)*12ms);transition:transform .2s}
+.hc:active{transform:scale(.94)}
+.hc img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.hc span{display:block;padding:4px 3px;font:800 11px Nunito,sans-serif;text-align:center;background:rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{display:block;text-align:center;padding:14px;border-radius:14px;color:#fff;text-decoration:none;border:0;width:100%;font:800 15px Nunito,sans-serif;margin:8px 0;background:linear-gradient(135deg,var(--or),#d83a00);box-shadow:0 6px 22px rgba(255,90,0,.45);transition:transform .2s}
+.btn:active{transform:scale(.97)}.btn.alt{background:rgba(255,255,255,.1);box-shadow:none;border:1px solid var(--line)}
+.back{border:0;background:none;color:var(--or2);font:800 14px Nunito,sans-serif;padding:6px 0}
+.banner{position:relative;border-radius:18px;overflow:hidden;animation:up .5s var(--ease) both}
+.banner img{display:block;width:100%;height:150px;object-fit:cover}
+.banner div{position:absolute;inset:auto 0 0;padding:30px 14px 10px;background:linear-gradient(transparent,rgba(13,7,22,.95))}
+.banner h2{margin:0;font:800 22px Nunito,sans-serif}
+.tag{display:inline-block;padding:3px 9px;margin:4px 4px 0 0;border-radius:12px;font-size:12px;background:rgba(255,122,24,.2);border:1px solid var(--line)}
+.ph{font:800 14px Nunito,sans-serif;margin-bottom:8px}
+.its{display:flex;gap:8px;flex-wrap:wrap}
+.it{width:62px;text-align:center;font-size:10px;line-height:1.15;color:var(--mut);animation:pop .45s var(--ease) both;animation-delay:calc(var(--i,0)*60ms)}
+.it img{display:block;width:62px;height:46px;border-radius:8px;object-fit:cover;margin-bottom:3px;border:1px solid var(--line);box-shadow:0 0 10px rgba(255,122,24,.25)}
+@keyframes pop{from{opacity:0;transform:scale(.5) rotate(-8deg)}}
+.mi{width:30px;height:22px;border-radius:4px;object-fit:cover;margin-right:3px;border:1px solid rgba(255,255,255,.15)}
+.mvp{border-color:gold;box-shadow:0 0 18px rgba(255,215,0,.45)}
+.sk{height:70px;border-radius:16px;margin:8px 0;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.14),rgba(255,255,255,.05));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.mut{color:var(--mut)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
 </style>
 </head>
 <body>
-<nav>
-<button class="on" data-t="meta">Мета</button>
-<button data-t="hero">Герой</button>
-<button data-t="match">Матч</button>
-<button data-t="order">Заказ</button>
-</nav>
-
-<section id="meta" class="on"><div id="metaList" class="mut">Загрузка…</div></section>
-
+<div id="fx"><div class="moon"></div></div>
+<header><div class="pump">🎃</div><div><h1>DotaList</h1><small id="days"></small></div></header>
+<nav><i id="pill"></i><button class="on">🔥 Мета</button><button>🦸 Герой</button><button>📊 Матч</button><button>⚔️ Дуэли</button><button>💼 Заказ</button></nav>
+<main>
+<section id="meta" class="on">
+  <div class="seg" id="seg"><button class="on" data-k="pub">📈 Паблики</button><button data-k="pro">🏆 Про</button><button data-k="bad">💀 Слабые</button></div>
+  <div id="metaList"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+</section>
 <section id="hero">
-<input id="heroIn" list="heroNames" placeholder="Имя героя, например Pudge">
-<datalist id="heroNames"></datalist>
-<div id="heroOut" class="mut">Введи героя и выбери из списка.</div>
+  <div id="heroList">
+    <input id="heroIn" placeholder="🔍 Найти героя (по-английски)">
+    <div class="chips" id="chips"><button class="on" data-a="">Все</button><button data-a="str">💪 Сила</button><button data-a="agi">🏹 Ловкость</button><button data-a="int">🧠 Интеллект</button><button data-a="all">🌀 Универсал</button></div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <div id="heroOut" style="display:none"></div>
 </section>
-
 <section id="match">
-<input id="matchIn" inputmode="numeric" placeholder="ID матча">
-<button class="btn" id="matchBtn">Разобрать матч</button>
-<div id="matchOut" class="mut">Матч должен быть публичным.</div>
+  <input id="matchIn" inputmode="numeric" placeholder="🔢 ID матча">
+  <button class="btn" id="matchBtn">Разобрать матч</button>
+  <div id="matchOut" class="mut">Нужен недавний публичный матч.</div>
 </section>
-
+<section id="play">
+  <div class="card"><b>📝 Регистрация</b><br><span class="mut">Введи свой Steam ID (число) или ссылку вида /profiles/…</span>
+    <input id="regIn" inputmode="numeric" placeholder="Steam ID">
+    <button class="btn" id="regBtn">Проверить профиль</button><div id="regOut"></div></div>
+  <div class="card" style="--i:1"><b>⚔️ Дуэли 1×1</b><br><span class="mut">Найди соперника на нужном герое. Контакты открываются только после согласия обоих.</span>
+    <button class="btn" data-go="lfg">Открыть в боте</button></div>
+  <div class="card" style="--i:2"><b>🔁 Обмен предметами</b><br><span class="mut">Только через Steam Trade, без денег. Ничего не отправляй первым.</span>
+    <button class="btn alt" data-go="trade">Открыть в боте</button></div>
+  <div class="card mut" style="--i:3">🛡 Объявления, контакты и жалобы работают в боте: так их можно модерировать. Не пиши личные данные.</div>
+</section>
 <section id="order">
-<div class="card"><b>Хочешь такого бота или приложение?</b><br>
-<span class="mut">Для твоего канала, стрима или клуба: разборы матчей, мини-игры, FAQ.</span></div>
-<a class="btn" id="contactBtn" style="display:none">Написать мне</a>
-<a class="btn" id="donateBtn" style="display:none">Поддержать проект</a>
+  <div class="card"><b>🦇 Хочешь такого бота или приложение?</b><br><span class="mut">Для твоего канала, стрима или клуба.</span></div>
+  <div class="card" style="--i:1">🤖 Telegram-бот: меню, игры, разборы матчей</div>
+  <div class="card" style="--i:2">📱 Мини-приложение: красивый интерфейс прямо в Telegram</div>
+  <div class="card" style="--i:3">🎮 Конкурсы, викторины и рейтинги для сообщества</div>
+  <a class="btn" id="contactBtn" style="display:none">✉️ Написать мне</a>
+  <a class="btn alt" id="donateBtn" style="display:none">🍬 Поддержать проект</a>
 </section>
-
+</main>
 <script>
 // ===== НАСТРОЙКИ: впиши свои ссылки =====
 const CONTACT = "";   // например "https://t.me/твой_ник"
 const DONATE = "";    // ссылка на донат (оформляется через родителей)
+const BOT = "";       // имя бота без @, например "DotaList_bot"
 // ========================================
-const API = "https://api.opendota.com/api", CDN = "https://cdn.cloudflare.steamstatic.com";
-const tg = window.Telegram && Telegram.WebApp; if (tg) { tg.ready(); tg.expand(); }
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const get = async p => { const r = await fetch(API + p); if (!r.ok) throw 0; return r.json(); };
-let HEROES = [];
+const API="https://api.opendota.com/api", CDN="https://cdn.cloudflare.steamstatic.com";
+const tg=window.Telegram&&Telegram.WebApp;
+try{tg.ready();tg.expand();tg.setHeaderColor("#0d0716");tg.setBackgroundColor("#0d0716")}catch(e){}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hap=()=>{try{tg.HapticFeedback.impactOccurred("light")}catch(e){}};
+const get=async p=>{const r=await fetch(API+p);if(!r.ok)throw 0;return r.json()};
+const sk='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+let HEROES=[],ITEMS={},attr="";
 
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button,section").forEach(e => e.classList.remove("on"));
-  b.classList.add("on"); $(b.dataset.t).classList.add("on");
+// --- декор: летающие тыквы, летучие мыши, призраки
+const fx=$("fx");
+["🦇","🎃","👻","🕷️","💀","🦇","🎃","👻"].forEach(e=>{
+  const s=document.createElement("span");s.textContent=e;
+  s.style.left=Math.random()*92+"%";s.style.fontSize=(18+Math.random()*22)+"px";
+  s.style.animationDuration=(12+Math.random()*14)+"s";s.style.animationDelay=(-Math.random()*20)+"s";
+  fx.appendChild(s);
 });
-if (CONTACT) { $("contactBtn").href = CONTACT; $("contactBtn").style.display = "block"; }
-if (DONATE) { $("donateBtn").href = DONATE; $("donateBtn").style.display = "block"; }
+const t0=new Date(),h0=new Date(t0.getFullYear(),9,31);
+let dd=Math.ceil((h0-new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()))/864e5);
+$("days").textContent=dd===0?"🎃 С Хэллоуином!":dd<0?"🕸 Хэллоуин уже был, ждём следующий":"🦇 До Хэллоуина: "+dd+" дн.";
+if(CONTACT){$("contactBtn").href=CONTACT;$("contactBtn").style.display="block"}
+if(DONATE){$("donateBtn").href=DONATE;$("donateBtn").style.display="block"}
 
-const tot = h => { let p = 0, w = 0; for (let i = 1; i <= 8; i++) { p += h[i + "_pick"] || 0; w += h[i + "_win"] || 0; } return [p, w]; };
+// --- вкладки с анимацией
+const tabs=["meta","hero","match","play","order"],btns=document.querySelectorAll("nav button");let cur=0;
+function go(i){
+  if(i===cur)return;const dir=i>cur?"r":"l";
+  $(tabs[cur]).className="";cur=i;
+  $(tabs[i]).className="on "+dir;
+  btns.forEach((b,k)=>b.classList.toggle("on",k===i));
+  $("pill").style.transform=`translateX(${i*100}%)`;
+  hap();window.scrollTo({top:0,behavior:"smooth"});
+}
+btns.forEach((b,i)=>b.onclick=()=>go(i));
 
-async function init() {
-  try {
-    HEROES = await get("/heroStats");
-    $("heroNames").innerHTML = HEROES.map(h => `<option value="${esc(h.localized_name)}">`).join("");
-    const mx = Math.max(...HEROES.map(h => tot(h)[0]));
-    const list = HEROES.map(h => { const [p, w] = tot(h); return {h, p, wr: p ? w / p * 100 : 0}; })
-      .filter(x => x.p >= mx * 0.2).sort((a, b) => b.wr - a.wr).slice(0, 15);
-    $("metaList").innerHTML = "<div class='mut'>Лучший винрейт среди популярных героев</div>" +
-      list.map((x, i) => `<div class="card row"><span>${i + 1}</span><img src="${CDN}${x.h.img}"><b>${esc(x.h.localized_name)}</b><span>${x.wr.toFixed(1)}%</span></div>`).join("");
-  } catch (e) { $("metaList").textContent = "Не удалось загрузить данные. Попробуй позже."; }
+// --- помощники
+const tot=h=>{let p=0,w=0;for(let i=1;i<=8;i++){p+=h[i+"_pick"]||0;w+=h[i+"_win"]||0}return[p,w]};
+const himg=h=>`${CDN}${h.img}`;
+const iname=id=>(ITEMS[id]||{}).n||"";
+const iimg=id=>ITEMS[id]?`${CDN}${ITEMS[id].img}`:"";
+const itemBig=(id,i)=>iimg(id)?`<div class="it" style="--i:${i}"><img loading="lazy" src="${iimg(id)}" alt="" onerror="this.style.opacity=.2"><span>${esc(iname(id))}</span></div>`:"";
+
+async function init(){
+  try{
+    const [hs,it]=await Promise.all([get("/heroStats"),get("/constants/items")]);
+    HEROES=hs.sort((a,b)=>a.localized_name.localeCompare(b.localized_name));
+    Object.values(it).forEach(v=>{if(v.id)ITEMS[v.id]={n:v.dname,img:v.img}});
+    renderMeta("pub");renderGrid();
+  }catch(e){$("metaList").innerHTML='<div class="card">Не удалось загрузить данные. Попробуй позже 👻</div>'}
+}
+const ready=init();
+
+// --- мета
+function renderMeta(kind){
+  const rows=HEROES.map(h=>{const[p,w]=tot(h);return{h,p,w,wr:p?w/p*100:0}});
+  const mx=Math.max(...rows.map(r=>r.p))||1,pop=rows.filter(r=>r.p>=mx*.2);
+  let list;
+  if(kind==="pro"){const m=Math.max(...HEROES.map(h=>h.pro_pick||0))||1;
+    list=HEROES.filter(h=>h.pro_pick).sort((a,b)=>b.pro_pick-a.pro_pick).slice(0,15).map(h=>({h,v:h.pro_pick+" пик.",b:h.pro_pick/m*100}))}
+  else{pop.sort((a,b)=>kind==="bad"?a.wr-b.wr:b.wr-a.wr);
+    list=pop.slice(0,15).map(r=>({h:r.h,v:r.wr.toFixed(1)+"%",b:Math.max(8,Math.min(100,(r.wr-40)*5))}))}
+  $("metaList").innerHTML=list.map((x,i)=>`<div class="card row" style="--i:${i}" data-id="${x.h.id}"><b class="rk ${i<3?"r"+(i+1):""}">${i+1}</b><img class="hp" src="${himg(x.h)}" alt=""><div class="gr"><b>${esc(x.h.localized_name)}</b><div class="bar"><i style="--w:${x.b}%"></i></div></div><span class="val">${x.v}</span></div>`).join("");
+}
+$("seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;hap();
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b));renderMeta(b.dataset.k)};
+$("metaList").onclick=e=>{const r=e.target.closest(".row");if(r)openHero(+r.dataset.id)};
+
+// --- список героев
+function renderGrid(){
+  const q=$("heroIn").value.trim().toLowerCase();
+  const list=HEROES.filter(h=>(!attr||h.primary_attr===attr)&&(!q||h.localized_name.toLowerCase().includes(q)));
+  $("grid").innerHTML=list.map((h,i)=>`<div class="hc" style="--i:${Math.min(i,20)}" data-id="${h.id}"><img loading="lazy" src="${himg(h)}" alt=""><span>${esc(h.localized_name)}</span></div>`).join("")||'<div class="card mut">Никого не нашёл 👻</div>';
+}
+$("heroIn").oninput=renderGrid;
+$("chips").onclick=e=>{const b=e.target.closest("button");if(!b)return;hap();attr=b.dataset.a;
+  document.querySelectorAll("#chips button").forEach(x=>x.classList.toggle("on",x===b));renderGrid()};
+$("grid").onclick=e=>{const c=e.target.closest(".hc");if(c){hap();openHero(+c.dataset.id)}};
+
+// --- страница героя
+function closeHero(){$("heroOut").style.display="none";$("heroList").style.display="block";try{tg.BackButton.hide()}catch(e){}}
+try{tg.BackButton.onClick(closeHero)}catch(e){}
+async function openHero(id){
+  go(1);await ready;
+  const h=HEROES.find(x=>x.id===id);if(!h)return;
+  const o=$("heroOut");$("heroList").style.display="none";o.style.display="block";o.innerHTML=sk;
+  try{tg.BackButton.show()}catch(e){}
+  try{
+    const[pop,lanes]=await Promise.all([get(`/heroes/${id}/itemPopularity`),get(`/scenarios/laneRoles?hero_id=${id}`)]);
+    const L={1:"Лёгкая линия",2:"Мид",3:"Сложная линия",4:"Лес"},agg={};
+    lanes.forEach(r=>agg[r.lane_role]=(agg[r.lane_role]||0)+ +r.games);
+    const sum=Object.values(agg).reduce((a,b)=>a+b,0)||1;
+    const lh=Object.entries(agg).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>{const p=v/sum*100;
+      return`<div style="margin:6px 0">${L[k]||k} <span class="val">${p.toFixed(0)}%</span><div class="bar"><i style="--w:${p}%"></i></div></div>`}).join("");
+    const ph=[["start_game_items","🎒 Стартовые предметы"],["early_game_items","⚔️ Лейнинг"],["mid_game_items","🛡 Мид-гейм"],["late_game_items","👑 Лейт"]];
+    const ih=ph.map(([k,t],n)=>{const ids=Object.entries(pop[k]||{}).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
+      return ids.length?`<div class="card" style="--i:${n+2}"><div class="ph">${t}</div><div class="its">${ids.map(itemBig).join("")}</div></div>`:""}).join("");
+    const[p,w]=tot(h),yt="https://www.youtube.com/results?search_query=",A={str:"💪 Сила",agi:"🏹 Ловкость",int:"🧠 Интеллект",all:"🌀 Универсал"};
+    o.innerHTML=`<button class="back" id="bk">← Все герои</button>
+      <div class="banner"><img src="${himg(h)}" alt=""><div><h2>${esc(h.localized_name)}</h2>
+      <span class="tag">${A[h.primary_attr]||""}</span><span class="tag">🏆 ${p?(w/p*100).toFixed(1):"-"}%</span>${(h.roles||[]).map(r=>`<span class="tag">${esc(r)}</span>`).join("")}</div></div>
+      <div class="card" style="--i:1"><div class="ph">📍 Где играют</div>${lh||'<span class="mut">Нет данных</span>'}</div>${ih}
+      <a class="btn" target="_blank" href="${yt+encodeURIComponent(h.localized_name+" дота 2 гайд")}">🎬 Гайд на русском</a>
+      <a class="btn alt" target="_blank" href="${yt+encodeURIComponent(h.localized_name+" dota 2 guide")}">🎬 Guide (English)</a>`;
+    $("bk").onclick=closeHero;
+  }catch(e){o.innerHTML='<button class="back" id="bk">← Назад</button><div class="card">Ошибка загрузки 👻</div>';$("bk").onclick=closeHero}
 }
 
-$("heroIn").addEventListener("change", async () => {
-  const q = $("heroIn").value.trim().toLowerCase();
-  const h = HEROES.find(x => x.localized_name.toLowerCase() === q);
-  if (!h) return;
-  $("heroOut").textContent = "Загрузка…";
-  try {
-    const [pop, items, lanes] = await Promise.all([get(`/heroes/${h.id}/itemPopularity`), get("/constants/items"), get(`/scenarios/laneRoles?hero_id=${h.id}`)]);
-    const nm = {}; Object.entries(items).forEach(([k, v]) => nm[v.id] = v.dname || k);
-    const L = {1: "Лёгкая линия", 2: "Мид", 3: "Сложная линия", 4: "Лес"}, agg = {};
-    lanes.forEach(r => agg[r.lane_role] = (agg[r.lane_role] || 0) + +r.games);
-    const sum = Object.values(agg).reduce((a, b) => a + b, 0) || 1;
-    const lanesHtml = Object.entries(agg).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${L[k] || k}: ${(v / sum * 100).toFixed(0)}%`).join(" · ");
-    const ph = [["start_game_items", "🎒 Старт"], ["early_game_items", "⚔️ Лейнинг"], ["mid_game_items", "🛡 Мид"], ["late_game_items", "👑 Лейт"]];
-    const itemsHtml = ph.map(([k, t]) => `<div>${t}: ${Object.entries(pop[k] || {}).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([i]) => esc(nm[i] || i)).join(", ")}</div>`).join("");
-    const [p, w] = tot(h), yt = "https://www.youtube.com/results?search_query=";
-    $("heroOut").innerHTML = `<div class="card row"><img src="${CDN}${h.img}"><b>${esc(h.localized_name)}</b><span>${p ? (w / p * 100).toFixed(1) : "-"}%</span></div>
-      <div class="card"><div class="mut">Роли: ${esc((h.roles || []).join(", "))}</div><div>📍 ${lanesHtml}</div></div>
-      <div class="card">${itemsHtml}</div>
-      <a class="btn" target="_blank" href="${yt + encodeURIComponent(h.localized_name + " дота 2 гайд")}">🎬 Гайд на русском</a>
-      <a class="btn" target="_blank" href="${yt + encodeURIComponent(h.localized_name + " dota 2 guide")}">🎬 Guide (English)</a>`;
-  } catch (e) { $("heroOut").textContent = "Ошибка загрузки."; }
-});
 
-const score = p => (p.kills || 0) * 3 + (p.assists || 0) * 1.5 - (p.deaths || 0) * 2 + (p.gold_per_min || 0) / 50 + (p.hero_damage || 0) / 1000 + (p.tower_damage || 0) / 500 + (p.hero_healing || 0) / 800;
-
-$("matchBtn").onclick = async () => {
-  const id = $("matchIn").value.trim(); if (!/^\d+$/.test(id)) return;
-  $("matchOut").textContent = "Загрузка…";
-  try {
-    const m = await get("/matches/" + id), ps = m.players;
-    ps.forEach(p => { p.s = score(p); const h = HEROES.find(x => x.id === p.hero_id); p.hn = h ? h.localized_name : "?"; });
-    const mvp = ps.reduce((a, b) => b.s > a.s ? b : a);
-    const best = k => ps.reduce((a, b) => (b[k] || 0) > (a[k] || 0) ? b : a);
-    const line = p => `<div class="card ${p === mvp ? "mvp" : ""}">${p === mvp ? "👑 " : ""}<b>${esc(p.personaname || "Аноним")}</b> <span class="mut">${esc(p.hn)}</span><br>${p.kills}/${p.deaths}/${p.assists} · GPM ${p.gold_per_min} · оценка ${p.s.toFixed(0)}</div>`;
-    const side = r => ps.filter(p => (p.player_slot < 128) === r).sort((a, b) => b.s - a.s).map(line).join("");
-    const nm = p => esc(p.personaname || "Аноним") + " (" + esc(p.hn) + ")";
-    $("matchOut").innerHTML = `<div class="card"><b>Победил: ${m.radiant_win ? "Свет" : "Тьма"}</b> · ${Math.floor(m.duration / 60)} мин<br>
-      🏆 MVP: ${nm(mvp)}<br>💥 Урон: ${nm(best("hero_damage"))}<br>💰 GPM: ${nm(best("gold_per_min"))}<br>🏰 Строения: ${nm(best("tower_damage"))}</div>
-      <b>☀️ Свет</b>${side(true)}<b>🌑 Тьма</b>${side(false)}`;
-  } catch (e) { $("matchOut").textContent = "Матч не найден или закрыт."; }
+// --- регистрация и переход в бота
+const RK=["Без ранга","Рекрут","Страж","Рыцарь","Герой","Легенда","Властелин","Божество","Титан"];
+function toBot(param){
+  if(BOT){const u=`https://t.me/${BOT}?start=${param}`;try{tg.openTelegramLink(u)}catch(e){window.open(u,"_blank")}}
+  else{try{tg.close()}catch(e){alert("Открой бота и нажми нужную кнопку")}}
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{hap();toBot(b.dataset.go)});
+$("regBtn").onclick=async()=>{
+  const t=$("regIn").value.trim().split("/").filter(Boolean).pop()||"",o=$("regOut");
+  if(!/^\d+$/.test(t)){o.innerHTML='<div class="mut" style="margin-top:8px">Нужен числовой ID.</div>';return}
+  hap();o.innerHTML=sk;
+  let n=BigInt(t);const B=76561197960265728n;if(n>B)n-=B;const acc=n.toString();
+  try{
+    const[d,wl]=await Promise.all([get("/players/"+acc),get(`/players/${acc}/wl`)]);
+    if(!d.profile)throw 0;
+    const rt=d.rank_tier||0,g=(wl.win||0)+(wl.lose||0);
+    o.innerHTML=`<div class="card row" style="margin-top:10px"><img class="hp" style="width:48px;height:48px;border-radius:50%" src="${esc(d.profile.avatarfull||"")}" alt="">
+      <div class="gr"><b>${esc(d.profile.personaname||"Игрок")}</b><span class="mut">${RK[Math.floor(rt/10)]||""} · ${g?(wl.win/g*100).toFixed(1)+"% побед":"нет данных"}</span></div></div>
+      <button class="btn" id="regOk">✅ Это я, подтвердить в боте</button>
+      <div class="mut" style="font-size:12px">Проверить, что аккаунт твой, нельзя, поэтому не доверяй чужим профилям слепо.</div>`;
+    $("regOk").onclick=()=>toBot("reg_"+acc);
+  }catch(e){o.innerHTML='<div class="card">Профиль не найден или закрыт 👻</div>'}
 };
-init();
+
+// --- матч
+const score=p=>(p.kills||0)*3+(p.assists||0)*1.5-(p.deaths||0)*2+(p.gold_per_min||0)/50+(p.hero_damage||0)/1000+(p.tower_damage||0)/500+(p.hero_healing||0)/800;
+$("matchBtn").onclick=async()=>{
+  const id=$("matchIn").value.trim();if(!/^\d+$/.test(id))return;hap();
+  $("matchOut").innerHTML=sk;await ready;
+  try{
+    const m=await get("/matches/"+id),ps=m.players;
+    ps.forEach(p=>{p.s=score(p);p.h=HEROES.find(x=>x.id===p.hero_id)||{localized_name:"?",img:""}});
+    const mvp=ps.reduce((a,b)=>b.s>a.s?b:a),best=k=>ps.reduce((a,b)=>(b[k]||0)>(a[k]||0)?b:a);
+    const nm=p=>esc(p.personaname||"Аноним")+" ("+esc(p.h.localized_name)+")";
+    let n=0;
+    const line=p=>{const its=[0,1,2,3,4,5].map(i=>p["item_"+i]).filter(Boolean).map(i=>`<img class="mi" loading="lazy" title="${esc(iname(i))}" src="${iimg(i)}" alt="">`).join("");
+      return`<div class="card ${p===mvp?"mvp":""}" style="--i:${n++}"><div class="row"><img class="hp" src="${himg(p.h)}" alt=""><div class="gr"><b>${p===mvp?"👑 ":""}${esc(p.personaname||"Аноним")}</b><span class="mut">${esc(p.h.localized_name)} · ${p.kills}/${p.deaths}/${p.assists} · GPM ${p.gold_per_min}</span></div><span class="val">${p.s.toFixed(0)}</span></div><div style="margin-top:6px">${its}</div></div>`};
+    const side=r=>ps.filter(p=>(p.player_slot<128)===r).sort((a,b)=>b.s-a.s).map(line).join("");
+    $("matchOut").innerHTML=`<div class="card"><b>🏁 Победил: ${m.radiant_win?"☀️ Свет":"🌑 Тьма"}</b> · ${Math.floor(m.duration/60)} мин<br>
+      🏆 MVP: ${nm(mvp)}<br>💥 Урон: ${nm(best("hero_damage"))}<br>💰 GPM: ${nm(best("gold_per_min"))}<br>🏰 Строения: ${nm(best("tower_damage"))}</div>
+      <div class="ph">☀️ Свет</div>${side(true)}<div class="ph">🌑 Тьма</div>${side(false)}`;
+  }catch(e){$("matchOut").innerHTML='<div class="card">Матч не найден или закрыт 👻</div>'}
+};
 </script>
 </body>
 </html>
