@@ -111,16 +111,17 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
 </section>
 <section id="order">
   <div class="card"><b>🦇 Хочешь такого бота или приложение?</b><br><span class="mut">Для твоего канала, стрима или клуба.</span></div>
-  <div class="card" style="--i:1">🤖 Telegram-бот: меню, игры, разборы матчей</div>
+  <div class="card" style="--i:1">🤖 Telegram-бот: разборы матчей, контрпики, Premium за Stars</div>
   <div class="card" style="--i:2">📱 Мини-приложение: красивый интерфейс прямо в Telegram</div>
   <div class="card" style="--i:3">🎮 Конкурсы, викторины и рейтинги для сообщества</div>
-  <a class="btn" id="contactBtn" style="display:none">✉️ Написать мне</a>
+  <a class="btn" id="contactBtn" style="display:none">✉️ Написать админу</a>
   <a class="btn alt" id="donateBtn" style="display:none">🍬 Поддержать проект</a>
 </section>
 </main>
 <script>
 // ===== НАСТРОЙКИ: впиши свои ссылки =====
-const CONTACT = "";   // например "https://t.me/твой_ник"
+const ADMIN_ID = "6566241543";   // Telegram ID админа
+const ADMIN_USER = "";           // твой @ник без @ (так чат открывается надёжнее)
 const DONATE = "";    // ссылка на донат (оформляется через родителей)
 const BOT = "";       // имя бота без @, например "DotaList_bot"
 // ========================================
@@ -145,7 +146,10 @@ const fx=$("fx");
 const t0=new Date(),h0=new Date(t0.getFullYear(),9,31);
 let dd=Math.ceil((h0-new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()))/864e5);
 $("days").textContent=dd===0?"🎃 С Хэллоуином!":dd<0?"🕸 Хэллоуин уже был, ждём следующий":"🦇 До Хэллоуина: "+dd+" дн.";
-if(CONTACT){$("contactBtn").href=CONTACT;$("contactBtn").style.display="block"}
+const cLink=ADMIN_USER?"https://t.me/"+ADMIN_USER:"tg://user?id="+ADMIN_ID;
+$("contactBtn").href=cLink;$("contactBtn").style.display="block";
+$("contactBtn").onclick=e=>{e.preventDefault();hap();
+  try{if(ADMIN_USER&&tg&&tg.openTelegramLink)tg.openTelegramLink(cLink);else window.location.href=cLink}catch(x){window.location.href=cLink}};
 if(DONATE){$("donateBtn").href=DONATE;$("donateBtn").style.display="block"}
 
 // --- вкладки с анимацией
