@@ -76,15 +76,25 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
 .mut{color:var(--mut)}
 .prem{border-color:gold;box-shadow:0 0 22px rgba(255,215,0,.28);background:linear-gradient(135deg,rgba(255,200,60,.14),rgba(255,122,24,.08))}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
+.sh{display:none;margin-left:auto;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 11px;font-size:18px}
+.fab{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:9;border:0;border-radius:24px;padding:12px 16px;font:800 14px Nunito,sans-serif;color:#fff;background:linear-gradient(135deg,var(--or),#d83a00);box-shadow:0 6px 22px rgba(255,122,24,.55);animation:pulse 2.4s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.plan{position:relative;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:14px;padding:12px 4px;font:800 14px Nunito,sans-serif;display:flex;flex-direction:column;gap:3px;transition:.25s}
+.plan:active{transform:scale(.96)}.plan.best{border-color:gold;box-shadow:0 0 18px rgba(255,215,0,.35)}
+.plan span{color:var(--or2)}.plan small{color:var(--mut);font-size:11px}
+.plan em{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:gold;color:#2b0f3d;border-radius:8px;padding:1px 7px;font:800 10px Nunito,sans-serif;font-style:normal}
+.step{display:flex;gap:10px;align-items:center;margin:8px 0}.step b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--or);display:grid;place-items:center}
 </style>
 </head>
 <body>
 <div id="fx"><div class="moon"></div></div>
-<header><div class="pump">🎃</div><div><h1>DotaList</h1><small id="days"></small></div></header>
+<header><div class="pump">🎃</div><div><h1>DotaList</h1><small id="days"></small></div><button class="sh" id="shareBtn">📤</button></header>
 <nav><i id="pill"></i><button class="on">🔥 Мета</button><button>🦸 Герой</button><button>📊 Матч</button><button>💎 Бот</button><button>💼 Заказ</button></nav>
 <main>
 <section id="meta" class="on">
   <div class="seg" id="seg"><button class="on" data-k="pub">📈 Паблики</button><button data-k="pro">🏆 Про</button><button data-k="bad">💀 Слабые</button><button data-k="live">🏟 Матчи</button></div>
+  <div id="subBox"></div><div id="daily"></div>
   <div id="metaList"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
 </section>
 <section id="hero">
@@ -101,8 +111,8 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
   <div id="matchOut" class="mut">Нужен недавний публичный матч.</div>
 </section>
 <section id="play">
-  <div class="card prem"><b>💎 Premium</b><br><span class="mut">Безлимитные советы тренера и контрпики, авто-уведомления о каждом матче и Tilt Guard.</span>
-    <button class="btn" data-go="prem">Открыть Premium в боте</button></div>
+  <div class="card prem"><b>💎 Premium</b><br><span class="mut">Безлимит на советы тренера и контрпики, авто-уведомления о каждом матче и Tilt Guard.</span>
+    <div class="plans" id="plans"></div><button class="btn" data-go="prem">Купить в боте: Stars или СБП</button></div>
   <div id="chBox"></div>
   <div class="card"><b>📝 Регистрация</b><br><span class="mut">Введи свой Steam ID (число) или ссылку вида /profiles/…</span>
     <input id="regIn" inputmode="numeric" placeholder="Steam ID">
@@ -118,18 +128,22 @@ input:focus{border-color:var(--or);box-shadow:0 0 16px rgba(255,122,24,.45)}
   <div class="card" style="--i:1">🤖 Telegram-бот: разборы матчей, контрпики, Premium за Stars</div>
   <div class="card" style="--i:2">📱 Мини-приложение: красивый интерфейс прямо в Telegram</div>
   <div class="card" style="--i:3">💎 Подписки и оплата: Telegram Stars и СБП</div>
+  <div class="card" style="--i:4"><div class="ph">⚡ Как это работает</div>
+    <div class="step"><b>1</b>Оставляешь заявку</div><div class="step"><b>2</b>Обсуждаем задачу и цену</div><div class="step"><b>3</b>Делаю и запускаю</div></div>
   <a class="btn" id="contactBtn" style="display:none">📝 Оставить заявку</a>
   <a class="btn alt" id="donateBtn" style="display:none">🍬 Поддержать проект</a>
 </section>
 </main>
+<button class="fab" id="fab">📝 Заявка</button>
 <script>
 // ===== НАСТРОЙКИ: впиши свои ссылки =====
 const ADMIN_ID = "6566241543";   // Telegram ID админа
 const ADMIN_USER = "";           // твой @ник без @ (так чат открывается надёжнее)
 const DONATE = "";    // ссылка на донат (оформляется через родителей)
-const CHANNEL = "";   // твой канал без @
+const CHANNEL = "DotaListChannel";   // твой канал без @
 const CHANNEL2 = "";  // канал брата без @
 const BOT = "";       // имя бота без @, например "DotaList_bot"
+const PLANS = [[7,50,99],[30,150,299],[90,350,699]];   // дни, Stars, ₽ (как в боте)
 // ========================================
 const API="https://api.opendota.com/api", CDN="https://cdn.cloudflare.steamstatic.com";
 const tg=window.Telegram&&Telegram.WebApp;
@@ -169,6 +183,7 @@ function go(i){
   $(tabs[i]).className="on "+dir;
   btns.forEach((b,k)=>b.classList.toggle("on",k===i));
   $("pill").style.transform=`translateX(${i*100}%)`;
+  $("fab").style.display=i===4?"none":"block";
   hap();window.scrollTo({top:0,behavior:"smooth"});
 }
 btns.forEach((b,i)=>b.onclick=()=>go(i));
@@ -255,6 +270,19 @@ async function openHero(id){
   }catch(e){o.innerHTML='<button class="back" id="bk">← Назад</button><div class="card">Ошибка загрузки 👻</div>';$("bk").onclick=closeHero}
 }
 
+
+// --- герой и совет дня, Premium, шеринг, подписка
+const TIPS=["Смотри на миникарту каждые несколько секунд: так меньше смертей.","Не лезь в драку без вижна: большинство смертей из-за неожиданных гангов.","Роша появляется через 8–11 минут после смерти: считай таймер.","Купи вовремя BKB, если в драфте у врагов много контроля.","Деньги не важнее башни: забирай объекты после выигранной драки.","Проигрываешь лайн? Не лезь в одиночку, смени план и попроси помощь.","После смерти посмотри, что тебя убило, и подбери предмет против этого.","Ставь варды заранее, а не когда уже поздно."];
+const day=Math.floor(Date.now()/864e5);
+ready.then(()=>{const h=HEROES[day%HEROES.length];if(!h)return;
+  $("daily").innerHTML=`<div class="card prem row" id="dh"><img class="hp" src="${himg(h)}" alt=""><div class="gr"><b>🎲 Герой дня: ${esc(h.localized_name)}</b><div class="mut">${TIPS[day%TIPS.length]}</div></div></div>`;
+  $("dh").onclick=()=>{hap();openHero(h.id)}});
+$("plans").innerHTML=PLANS.map(([d,s,r],i)=>`<button class="plan${i===1?" best":""}">${i===1?"<em>Выгодно</em>":""}<b>${d} дн.</b><span>⭐ ${s}</span><small>${r} ₽ СБП</small></button>`).join("");
+$("plans").querySelectorAll("button").forEach(b=>b.onclick=()=>{hap();toBot("prem")});
+$("fab").onclick=()=>go(4);
+if(CHANNEL){$("subBox").innerHTML=`<div class="card"><b>📢 Новости Dota 2</b><br><span class="mut">Патчи, турниры и мета каждый день.</span><a class="btn" id="subBtn" href="https://t.me/${CHANNEL}">Подписаться</a></div>`;
+  $("subBtn").onclick=e=>{e.preventDefault();hap();try{tg.openTelegramLink("https://t.me/"+CHANNEL)}catch(x){window.open("https://t.me/"+CHANNEL,"_blank")}}}
+if(BOT){$("shareBtn").style.display="block";$("shareBtn").onclick=()=>{hap();const u="https://t.me/share/url?url="+encodeURIComponent("https://t.me/"+BOT)+"&text="+encodeURIComponent("DotaList: герои, мета, разбор матчей и контрпики по Dota 2");try{tg.openTelegramLink(u)}catch(e){window.open(u,"_blank")}}}
 
 // --- регистрация и переход в бота
 const RK=["Без ранга","Рекрут","Страж","Рыцарь","Герой","Легенда","Властелин","Божество","Титан"];
