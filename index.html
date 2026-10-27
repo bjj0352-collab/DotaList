@@ -142,7 +142,8 @@ const ADMIN_USER = "";           // твой @ник без @ (так чат о�
 const DONATE = "";    // ссылка на донат (оформляется через родителей)
 const CHANNEL = "DotaListChannel";   // твой канал без @
 const CHANNEL2 = "";  // канал брата без @
-const BOT = "";       // имя бота без @, например "DotaList_bot"
+const BOT_MANUAL = "";   // можно вписать имя бота без @, например "DotaList_bot"; если пусто, бот сам передаёт своё имя
+const BOT = BOT_MANUAL || (new URLSearchParams(location.search).get("b") || "").replace(/[^\w]/g,"");
 const PLANS = [[7,50,99],[30,150,299],[90,350,699]];   // дни, Stars, ₽ (как в боте)
 // ========================================
 const API="https://api.opendota.com/api", CDN="https://cdn.cloudflare.steamstatic.com";
@@ -274,7 +275,7 @@ async function openHero(id){
 // --- герой и совет дня, Premium, шеринг, подписка
 const TIPS=["Смотри на миникарту каждые несколько секунд: так меньше смертей.","Не лезь в драку без вижна: большинство смертей из-за неожиданных гангов.","Роша появляется через 8–11 минут после смерти: считай таймер.","Купи вовремя BKB, если в драфте у врагов много контроля.","Деньги не важнее башни: забирай объекты после выигранной драки.","Проигрываешь лайн? Не лезь в одиночку, смени план и попроси помощь.","После смерти посмотри, что тебя убило, и подбери предмет против этого.","Ставь варды заранее, а не когда уже поздно."];
 const day=Math.floor(Date.now()/864e5);
-ready.then(()=>{const h=HEROES[day%HEROES.length];if(!h)return;
+ready.then(()=>{const HS=[...HEROES].sort((a,b)=>a.id-b.id),h=HS[day%HS.length];if(!h)return;
   $("daily").innerHTML=`<div class="card prem row" id="dh"><img class="hp" src="${himg(h)}" alt=""><div class="gr"><b>🎲 Герой дня: ${esc(h.localized_name)}</b><div class="mut">${TIPS[day%TIPS.length]}</div></div></div>`;
   $("dh").onclick=()=>{hap();openHero(h.id)}});
 $("plans").innerHTML=PLANS.map(([d,s,r],i)=>`<button class="plan${i===1?" best":""}">${i===1?"<em>Выгодно</em>":""}<b>${d} дн.</b><span>⭐ ${s}</span><small>${r} ₽ СБП</small></button>`).join("");
